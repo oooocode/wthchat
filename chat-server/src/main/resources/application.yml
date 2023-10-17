@@ -1,7 +1,10 @@
+server:
+  port: 8000
+
 spring:
   profiles:
     #运行的环境
-    active: dev
+    active: test
   application:
     name: mallchat
   datasource:
