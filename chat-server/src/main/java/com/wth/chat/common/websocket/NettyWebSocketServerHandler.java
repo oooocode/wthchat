@@ -1,8 +1,12 @@
 package com.wth.chat.common.websocket;
 
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
+import com.sun.glass.ui.Application;
 import com.wth.chat.common.websocket.domain.enums.WSReqTypeEnum;
 import com.wth.chat.common.websocket.domain.vo.req.WSBaseReq;
+import com.wth.chat.common.websocket.service.WebSocketService;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,6 +15,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.mp.api.WxMpService;
+import org.springframework.boot.SpringApplication;
 
 
 /**
@@ -21,6 +27,21 @@ import lombok.extern.slf4j.Slf4j;
 @Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
+    private WebSocketService webSocketService;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 每次连接可用后进行的操作
+        webSocketService = SpringUtil.getBean(WebSocketService.class);
+        webSocketService.connect(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // 客户端主动下线
+        userOffline(ctx.channel());
+    }
+
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
@@ -28,12 +49,15 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         } else if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
-                // todo 用户下线
-                // 关闭连接
-                ctx.channel().close();
-                log.info("ws 连接断开");
+                // 没有收到心跳主动下线
+                userOffline(ctx.channel());
             }
         }
+    }
+
+    private void userOffline(Channel channel) {
+        webSocketService.remove(channel);
+        channel.close();
     }
 
     @Override
@@ -46,9 +70,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
             case HEARTBEAT:
                 break;
             case LOGIN:
-                log.info("请求登录二维码");
-                // websocket的请求和返回都用帧(规范)传递的，所以返回需要封装一下
-                ctx.channel().writeAndFlush(new TextWebSocketFrame("返回给你的二维码"));
+                webSocketService.handleLoginReq(ctx.channel());
                 break;
             default:
                 log.info("非法请求");
