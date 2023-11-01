@@ -4,10 +4,11 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.wth.chat.common.user.dao.UserDao;
+import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.service.LoginService;
 import com.wth.chat.common.websocket.domain.dto.WSChannelExtraDTO;
-import com.wth.chat.common.websocket.domain.enums.WSRespTypeEnum;
 import com.wth.chat.common.websocket.domain.vo.resp.WSBaseResp;
-import com.wth.chat.common.websocket.domain.vo.resp.WSLoginUrl;
 import com.wth.chat.common.websocket.service.WebSocketService;
 import com.wth.chat.common.websocket.service.adapter.WebSocketAdapter;
 import io.netty.channel.Channel;
@@ -15,6 +16,8 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.SneakyThrows;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,7 +34,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketServiceImpl implements WebSocketService {
 
     @Resource
+    @Lazy
     private WxMpService wxMpService;
+
+    @Autowired
+    private LoginService loginService;
+
+    @Autowired
+    private UserDao userDao;
 
     /**
      * 管理所有用户的连接(用户/游客)
@@ -70,6 +80,31 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void remove(Channel channel) {
         ONLINE_WS_MAP.remove(channel);
         // todo 用戶下线
+    }
+
+    @Override
+    public void scanLoginSuccess(Integer code, Long id) {
+        // 确认链接存在
+        Channel channel = WAIT_LOGIN_MAP.getIfPresent(code);
+        if (Objects.isNull(channel)) {
+            return;
+        }
+        // 删除临时链接
+        WAIT_LOGIN_MAP.invalidate(code);
+        // 生成token
+        User user = userDao.getById(id);
+        String token = loginService.login(user.getId());
+        // 用户登录
+        sendMsg(channel, WebSocketAdapter.build(user, token));
+    }
+
+    @Override
+    public void waitAuthorize(Integer code) {
+        Channel channel = WAIT_LOGIN_MAP.getIfPresent(code);
+        if (Objects.isNull(channel)) {
+            return;
+        }
+        sendMsg(channel, WebSocketAdapter.buildWaitAuthorize());
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> wsBaseResp) {

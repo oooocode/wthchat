@@ -3,7 +3,6 @@ package com.wth.chat.common;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.mapper.UserMapper;
 import me.chanjar.weixin.common.error.WxErrorException;
-import me.chanjar.weixin.mp.api.WxMpQrcodeService;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.junit.Assert;

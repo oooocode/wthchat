@@ -1,6 +1,7 @@
 package com.wth.chat.common.user.service.adapter;
 
-import me.chanjar.weixin.mp.api.WxMpService;
+import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.websocket.domain.vo.resp.WSBaseResp;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutTextMessage;
@@ -12,8 +13,10 @@ public class TextBuilder {
 
     public static WxMpXmlOutMessage build(String content, WxMpXmlMessage wxMessage) {
         WxMpXmlOutTextMessage m = WxMpXmlOutMessage.TEXT().content(content)
-                .fromUser(wxMessage.getToUser()).toUser(wxMessage.getFromUser())
+                .fromUser(wxMessage.getToUser())
+                .toUser(wxMessage.getFromUser())
                 .build();
         return m;
     }
+
 }

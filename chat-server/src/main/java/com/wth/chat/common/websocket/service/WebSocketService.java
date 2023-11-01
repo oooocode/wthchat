@@ -1,7 +1,6 @@
 package com.wth.chat.common.websocket.service;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 
 /**
  * @Author: wth
@@ -15,4 +14,7 @@ public interface WebSocketService {
 
     void remove(Channel channel);
 
+    void scanLoginSuccess(Integer code, Long id);
+
+    void waitAuthorize(Integer code);
 }
