@@ -60,7 +60,7 @@ public class WXMsgServiceImpl implements WXMsgService {
         boolean registered = Objects.nonNull(user);
         boolean authorized = registered && StringUtils.isNotBlank(user.getAvatar());
         if (registered && authorized) {
-            // todo 登录成功逻辑 使用 code 关联 channel 通知前端登录成功
+            // 登录成功逻辑 使用 code 关联 channel 通知前端登录成功
             webSocketService.scanLoginSuccess(code, user.getId());
             return null;
         }

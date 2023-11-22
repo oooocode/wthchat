@@ -13,6 +13,7 @@ import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 public interface UserService  {
 
 
+
     Long register(User insert);
 
     void authorize(WxOAuth2UserInfo userInfo);
