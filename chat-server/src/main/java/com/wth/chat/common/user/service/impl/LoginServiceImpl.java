@@ -18,12 +18,27 @@ import java.util.concurrent.TimeUnit;
 public class LoginServiceImpl implements LoginService {
 
     public static final int TOKEN_EXPIRE_DAYS = 3;
+    public static final int TOKEN_RENEW_DAY = 1;
     @Autowired
     private JwtUtils jwtUtils;
 
     @Override
     public void renewalTokenIfNecessary(String token) {
-
+        Long uid = getValidUid(token);
+        // 无效的token,拒绝刷新
+        if (Objects.isNull(uid)) {
+            return;
+        }
+        String userTokenKey = getUserTokenKey(uid);
+        Long expireDays = RedisUtils.getExpire(userTokenKey, TimeUnit.DAYS);
+        // key 不存在返回-2
+        if (expireDays == -2) {
+            return;
+        }
+        // 小于1天刷新token
+        if (expireDays < TOKEN_RENEW_DAY) {
+            RedisUtils.expire(userTokenKey, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+        }
     }
 
     @Override
@@ -32,14 +47,12 @@ public class LoginServiceImpl implements LoginService {
         if (Objects.isNull(uid)) {
             return null;
         }
-        Long oldToken = RedisUtils.get(getUserTokenKey(uid), Long.class);
-        if (Objects.isNull(oldToken)) {
-            return null;
-        }
-        return uid;
+        // redis 的token过期uid将会失效
+        String oldToken = RedisUtils.get(getUserTokenKey(uid));
+        return Objects.equals(oldToken, token) ? uid : null;
     }
 
-    private static String getUserTokenKey(Long uid) {
+    private String getUserTokenKey(Long uid) {
         return RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
     }
 

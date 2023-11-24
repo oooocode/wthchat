@@ -1,10 +1,11 @@
 package com.wth.chat.common;
 
-import com.wth.chat.common.common.config.RedissonConfig;
+import com.wth.chat.common.common.thread.MyUncaughtExceptionHandler;
+import com.wth.chat.common.common.utils.JwtUtils;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.mapper.UserMapper;
-import com.wth.chat.common.common.utils.JwtUtils;
-import com.wth.chat.common.common.utils.RedisUtils;
+import com.wth.chat.common.user.service.LoginService;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
@@ -15,16 +16,18 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import javax.swing.plaf.TreeUI;
 
 /**
  * 测试类必须在主程序关闭才可以启动否则 会开启第二个websocket 会导致端口占用
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@Slf4j
 public class TestDB {
 
     @Resource
@@ -39,6 +42,9 @@ public class TestDB {
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private LoginService loginService;
 
     @Test
     public void test() {
@@ -72,5 +78,25 @@ public class TestDB {
         lock.unlock();
     }
 
+    @Test
+    public void tokenTest() {
+        String s = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjExMDA2LCJjcmVhdGVUaW1lIjoxNzAwNjcwODA4fQ.KZ5u4cv7mLXbuNaU5Ysv81gJ02IDIP9aM8PljUWyth0";
+        Long validUid = loginService.getValidUid(s);
+        System.out.println("validUid = " + validUid);
+    }
+
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    @Test
+    public void testThread() throws InterruptedException {
+        threadPoolTaskExecutor.execute(() -> {
+            if (true) {
+                log.error("1111");
+                throw new RuntimeException("111");
+            }
+        });
+        Thread.sleep(200);
+    }
 
 }
