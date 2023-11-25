@@ -9,9 +9,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * @author 29977
+ */
 @Configuration
 @EnableAsync
 public class ThreadPoolConfig implements AsyncConfigurer {

@@ -1,10 +1,12 @@
 package com.wth.chat.common.user.service.impl;
 
+import com.wth.chat.common.common.config.ThreadPoolConfig;
 import com.wth.chat.common.common.utils.RedisUtils;
 import com.wth.chat.common.constants.RedisKey;
 import com.wth.chat.common.user.service.LoginService;
 import com.wth.chat.common.common.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -23,6 +25,7 @@ public class LoginServiceImpl implements LoginService {
     private JwtUtils jwtUtils;
 
     @Override
+    @Async(ThreadPoolConfig.MALLCHAT_EXECUTOR)
     public void renewalTokenIfNecessary(String token) {
         Long uid = getValidUid(token);
         // 无效的token,拒绝刷新
@@ -48,7 +51,7 @@ public class LoginServiceImpl implements LoginService {
             return null;
         }
         // redis 的token过期uid将会失效
-        String oldToken = RedisUtils.get(getUserTokenKey(uid));
+        String oldToken = RedisUtils.getStr(getUserTokenKey(uid));
         return Objects.equals(oldToken, token) ? uid : null;
     }
 
