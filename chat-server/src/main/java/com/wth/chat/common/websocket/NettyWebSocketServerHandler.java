@@ -6,6 +6,7 @@ import com.sun.glass.ui.Application;
 import com.wth.chat.common.websocket.domain.enums.WSReqTypeEnum;
 import com.wth.chat.common.websocket.domain.vo.req.WSBaseReq;
 import com.wth.chat.common.websocket.service.WebSocketService;
+import com.wth.chat.common.websocket.util.NettyUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,6 +46,8 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
+            webSocketService.authorize(ctx.channel(), token);
             log.info("握手完成");
         } else if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
