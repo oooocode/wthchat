@@ -1,7 +1,6 @@
 package com.wth.chat.common.websocket;
 
 import cn.hutool.core.net.url.UrlBuilder;
-import com.baomidou.mybatisplus.core.conditions.segments.MatchSegment;
 import com.wth.chat.common.websocket.util.NettyUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
