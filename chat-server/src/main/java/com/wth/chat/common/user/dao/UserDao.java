@@ -3,9 +3,6 @@ package com.wth.chat.common.user.dao;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.mapper.UserMapper;
-import com.wth.chat.common.user.service.adapter.UserAdapter;
-import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,4 +17,14 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
     }
 
 
+    public boolean modifyName(Long uid, String name) {
+        return lambdaUpdate()
+                .set(User::getName, name)
+                .eq(User::getId, uid)
+                .update();
+    }
+
+    public User getByName(String name) {
+        return lambdaQuery().eq(User::getName, name).one();
+    }
 }

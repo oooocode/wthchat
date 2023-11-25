@@ -1,8 +1,8 @@
 package com.wth.chat.common.user.service;
 
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
 /**
@@ -18,4 +18,7 @@ public interface UserService  {
 
     void authorize(WxOAuth2UserInfo userInfo);
 
+    UserInfoResp getUserInfo(Long uid);
+
+    void modifyName(Long uid, String name);
 }

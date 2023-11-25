@@ -3,6 +3,7 @@ package com.wth.chat.common.common.utils;
 import com.wth.chat.common.user.domain.dto.RequestInfo;
 
 /**
+ * Description: 请求上下文
  * @Author: wth
  * @Create: 2023/11/25 - 18:26
  */

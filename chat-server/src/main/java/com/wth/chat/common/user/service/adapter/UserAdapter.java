@@ -1,6 +1,9 @@
 package com.wth.chat.common.user.service.adapter;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.BeanCopier;
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
 /**
@@ -18,5 +21,11 @@ public class UserAdapter {
                 .name(userInfo.getNickname())
                 .avatar(userInfo.getHeadImgUrl())
                 .build();
+    }
+
+    public static UserInfoResp buildUserInfo(User user, Integer modifyNameCount) {
+        UserInfoResp userInfoResp = BeanUtil.copyProperties(user, UserInfoResp.class);
+        userInfoResp.setModifyNameChance(modifyNameCount);
+        return userInfoResp;
     }
 }
