@@ -3,7 +3,9 @@ package com.wth.chat.common.user.controller;
 
 import com.wth.chat.common.common.utils.RequestHolder;
 import com.wth.chat.common.user.domain.vo.req.ModifyNameReq;
+import com.wth.chat.common.user.domain.vo.req.WearingBadgeReq;
 import com.wth.chat.common.user.domain.vo.resp.ApiResult;
+import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import com.wth.chat.common.user.service.UserService;
 import io.swagger.annotations.Api;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -38,6 +41,19 @@ public class UserController {
     @ApiOperation("修改用户名称")
     public ApiResult<Void> modifyName(@RequestBody @Valid ModifyNameReq modifyNameReq) {
         userService.modifyName(RequestHolder.getUid(), modifyNameReq.getName());
+        return ApiResult.success();
+    }
+
+    @GetMapping("/badges")
+    @ApiOperation("获取徽章")
+    public ApiResult<List<BadgeResp>> badges() {
+        return ApiResult.success(userService.badges(RequestHolder.getUid()));
+    }
+
+    @PostMapping("/wearing")
+    @ApiOperation("获取徽章")
+    public ApiResult<Void> wearingBadge(@RequestBody @Valid WearingBadgeReq wearingBadgeReq) {
+        userService.wearingBadge(RequestHolder.getUid(), wearingBadgeReq.getItemId());
         return ApiResult.success();
     }
 

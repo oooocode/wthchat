@@ -2,8 +2,11 @@ package com.wth.chat.common.user.service;
 
 
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
+
+import java.util.List;
 
 /**
 * @author 29977
@@ -21,4 +24,8 @@ public interface UserService  {
     UserInfoResp getUserInfo(Long uid);
 
     void modifyName(Long uid, String name);
+
+    List<BadgeResp> badges(Long uid);
+
+    void wearingBadge(Long uid, Long itemId);
 }

@@ -3,8 +3,12 @@ package com.wth.chat.common;
 import com.wth.chat.common.common.thread.MyUncaughtExceptionHandler;
 import com.wth.chat.common.common.utils.JwtUtils;
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.enums.IdempotentEnum;
+import com.wth.chat.common.user.domain.enums.ItemEnum;
+import com.wth.chat.common.user.domain.enums.ItemTypeEnum;
 import com.wth.chat.common.user.mapper.UserMapper;
 import com.wth.chat.common.user.service.LoginService;
+import com.wth.chat.common.user.service.UserBackpackService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -30,6 +34,7 @@ import javax.swing.plaf.TreeUI;
 @Slf4j
 public class TestDB {
 
+    public static final Long MY_UID = 11006L;
     @Resource
     private UserMapper userMapper;
 
@@ -45,6 +50,9 @@ public class TestDB {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private UserBackpackService userBackpackService;
 
     @Test
     public void test() {
@@ -97,6 +105,11 @@ public class TestDB {
             }
         });
         Thread.sleep(200);
+    }
+
+    @Test
+    public void testAcquireItem() {
+        userBackpackService.acquireItem(MY_UID, ItemEnum.PLANET.getId(), IdempotentEnum.UID, MY_UID.toString());
     }
 
 }
