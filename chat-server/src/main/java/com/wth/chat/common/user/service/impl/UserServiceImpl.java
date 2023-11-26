@@ -1,6 +1,7 @@
 package com.wth.chat.common.user.service.impl;
 
 
+import com.wth.chat.common.common.annotation.RedissonLock;
 import com.wth.chat.common.common.config.CacheConfig;
 import com.wth.chat.common.common.utils.AssertUtil;
 import com.wth.chat.common.user.dao.ItemConfigDao;
@@ -80,6 +81,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    @RedissonLock(key = "#uid")
     public void modifyName(Long uid, String name) {
         User oldUser = userDao.getByName(name);
         AssertUtil.isEmpty(oldUser, "名字不能重复!");

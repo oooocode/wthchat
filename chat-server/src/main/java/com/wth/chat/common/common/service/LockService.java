@@ -24,18 +24,24 @@ public class LockService {
     @Autowired
     private RedissonClient redissonClient;
 
-    @SneakyThrows
-    public <T> T executeWithLock(String key, long time, TimeUnit timeUnit, Supplier<T> supplier) {
+    public <T> T executeWithLockThrows(String key, int waitTime, TimeUnit unit, SupplierThrow<T> supplier) throws Throwable {
         RLock lock = redissonClient.getLock(key);
-        boolean success = lock.tryLock(time, timeUnit);
-        if (!success) {
+        boolean lockSuccess = lock.tryLock(waitTime, unit);
+        if (!lockSuccess) {
             throw new BusinessException(CommonErrorEnum.LOCK_LIMIT);
         }
         try {
-            return supplier.get();
+            return supplier.get();//执行锁内的代码逻辑
         } finally {
-            lock.unlock();
+            if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
+    }
+
+    @SneakyThrows
+    public <T> T executeWithLock(String key, int waitTime, TimeUnit timeUnit, Supplier<T> supplier) {
+        return executeWithLockThrows(key, waitTime, timeUnit, supplier::get);
     }
 
     public <T> T executeWithLock(String key,  Supplier<T> supplier) {
@@ -47,5 +53,16 @@ public class LockService {
             runnable.run();
             return null;
         });
+    }
+
+    @FunctionalInterface
+    public interface SupplierThrow<T> {
+
+        /**
+         * Gets a result.
+         *
+         * @return a result
+         */
+        T get() throws Throwable;
     }
 }

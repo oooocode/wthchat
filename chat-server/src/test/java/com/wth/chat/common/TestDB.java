@@ -1,11 +1,9 @@
 package com.wth.chat.common;
 
-import com.wth.chat.common.common.thread.MyUncaughtExceptionHandler;
 import com.wth.chat.common.common.utils.JwtUtils;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.domain.enums.IdempotentEnum;
 import com.wth.chat.common.user.domain.enums.ItemEnum;
-import com.wth.chat.common.user.domain.enums.ItemTypeEnum;
 import com.wth.chat.common.user.mapper.UserMapper;
 import com.wth.chat.common.user.service.LoginService;
 import com.wth.chat.common.user.service.UserBackpackService;
@@ -24,7 +22,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import javax.swing.plaf.TreeUI;
 
 /**
  * 测试类必须在主程序关闭才可以启动否则 会开启第二个websocket 会导致端口占用
