@@ -3,6 +3,8 @@ package com.wth.chat.common.user.service.impl;
 
 import com.wth.chat.common.common.annotation.RedissonLock;
 import com.wth.chat.common.common.config.CacheConfig;
+import com.wth.chat.common.common.event.UserRegisterEvent;
+import com.wth.chat.common.common.event.listener.RegisterEventListener;
 import com.wth.chat.common.common.utils.AssertUtil;
 import com.wth.chat.common.user.dao.ItemConfigDao;
 import com.wth.chat.common.user.dao.UserBackpackDao;
@@ -21,6 +23,7 @@ import com.wth.chat.common.websocket.service.WebSocketService;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,11 +55,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ItemCache itemCache;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long register(User user) {
-        boolean save = userDao.save(user);
-        // todo  通知其他订阅者，如赠送积分等等
+        userDao.save(user);
+        // 发送用户注册时间
+        applicationEventPublisher.publishEvent(new UserRegisterEvent(this, user));
         return user.getId();
     }
 
