@@ -1,12 +1,10 @@
 package com.wth.chat.common.common.event.listener;
 
 import com.wth.chat.common.common.event.UserRegisterEvent;
-import com.wth.chat.common.user.dao.UserBackpackDao;
 import com.wth.chat.common.user.dao.UserDao;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.domain.enums.IdempotentEnum;
 import com.wth.chat.common.user.domain.enums.ItemEnum;
-import com.wth.chat.common.user.domain.enums.ItemTypeEnum;
 import com.wth.chat.common.user.service.UserBackpackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +24,6 @@ public class RegisterEventListener {
     @Autowired
     private UserDao userDao;
 
-
     @TransactionalEventListener(value = UserRegisterEvent.class, phase = TransactionPhase.AFTER_COMMIT)
     public void sendCard(UserRegisterEvent userRegisterEvent) {
         User user = userRegisterEvent.getUser();
@@ -42,7 +39,7 @@ public class RegisterEventListener {
         } else if (registerCount < 100) {
             userBackpackService.acquireItem(user.getId(), ItemEnum.REG_TOP100_BADGE.getId(), IdempotentEnum.UID, user.getId().toString());
         }
-
-
     }
+
+
 }

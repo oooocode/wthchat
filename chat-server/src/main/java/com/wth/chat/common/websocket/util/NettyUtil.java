@@ -12,6 +12,7 @@ import io.netty.util.AttributeKey;
 public class NettyUtil {
 
     public static final AttributeKey<String> TOKEN = AttributeKey.valueOf("token");
+    public static final AttributeKey<String> IP = AttributeKey.valueOf("ip");
 
     public static <T> void setAttr(Channel channel, AttributeKey<T> attributeKey, T value) {
         Attribute<T> attr = channel.attr(attributeKey);

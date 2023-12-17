@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.wth.chat.common.common.event.UserOnlineEvent;
 import com.wth.chat.common.user.dao.UserDao;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.service.LoginService;
@@ -11,17 +12,20 @@ import com.wth.chat.common.websocket.domain.dto.WSChannelExtraDTO;
 import com.wth.chat.common.websocket.domain.vo.resp.WSBaseResp;
 import com.wth.chat.common.websocket.service.WebSocketService;
 import com.wth.chat.common.websocket.service.adapter.WebSocketAdapter;
+import com.wth.chat.common.websocket.util.NettyUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.SneakyThrows;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.Duration;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +46,8 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 管理所有用户的连接(用户/游客)
@@ -123,9 +129,12 @@ public class WebSocketServiceImpl implements WebSocketService {
         // 建立 channel 与 uid 的关联
         WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
         wsChannelExtraDTO.setUid(user.getId());
-        // todo 用户上线成功的事件
         // 推送成功消息
         sendMsg(channel, WebSocketAdapter.build(user, token));
+        // 用户上线成功的事件
+        user.setLastOptTime(new Date());
+        user.refreshIp(NettyUtil.getAttr(channel, NettyUtil.IP));
+        applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> wsBaseResp) {

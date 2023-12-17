@@ -46,6 +46,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            // 获取和channel绑定的token
             String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
             webSocketService.authorize(ctx.channel(), token);
             log.info("握手完成");
