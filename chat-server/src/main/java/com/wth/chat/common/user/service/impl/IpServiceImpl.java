@@ -62,7 +62,7 @@ public class IpServiceImpl implements IpService, DisposableBean {
         });
     }
 
-    private static IpDetail tryGetIpDetailOrNullThreeTimes(String ip) {
+    private IpDetail tryGetIpDetailOrNullThreeTimes(String ip) {
         for (int i = 0; i < 3; i++) {
             IpDetail ipDetail = getIpDetailOrNull(ip);
             if (Objects.nonNull(ipDetail)) {
@@ -77,7 +77,7 @@ public class IpServiceImpl implements IpService, DisposableBean {
         return null;
     }
 
-    private static IpDetail getIpDetailOrNull(String ip) {
+    private IpDetail getIpDetailOrNull(String ip) {
         String body = HttpUtil.get("https://ip.taobao.com/outGetIpInfo?ip=" + ip + "&accessKey=alibaba-inc");
         try {
             IpResult<IpDetail> result = JSONUtil.toBean(body, new TypeReference<IpResult<IpDetail>>() {
@@ -88,21 +88,6 @@ public class IpServiceImpl implements IpService, DisposableBean {
         } catch (Exception ignored) {
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        Date begin = new Date();
-        for (int i = 0; i < 100; i++) {
-            int finalI = i;
-            int finalI1 = i;
-            executor.execute(() -> {
-                IpDetail ipDetail = tryGetIpDetailOrNullThreeTimes("117.85.133.4");
-                if (Objects.nonNull(ipDetail)) {
-                    Date current = new Date();
-                    System.out.printf(String.format("第%d次成功，总耗时%dms%n", finalI1, (current.getTime() - begin.getTime())));
-                }
-            });
-        }
     }
 
     @Override

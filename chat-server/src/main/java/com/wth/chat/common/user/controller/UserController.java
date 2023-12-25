@@ -1,12 +1,16 @@
 package com.wth.chat.common.user.controller;
 
 
+import com.wth.chat.common.common.utils.AssertUtil;
 import com.wth.chat.common.common.utils.RequestHolder;
+import com.wth.chat.common.user.domain.enums.RoleEnum;
+import com.wth.chat.common.user.domain.vo.req.BlackUserReq;
 import com.wth.chat.common.user.domain.vo.req.ModifyNameReq;
 import com.wth.chat.common.user.domain.vo.req.WearingBadgeReq;
 import com.wth.chat.common.user.domain.vo.resp.ApiResult;
 import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
+import com.wth.chat.common.user.service.RoleService;
 import com.wth.chat.common.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,6 +35,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
     @GetMapping("/userInfo")
     @ApiOperation("获取用户信息")
     public ApiResult<UserInfoResp> getUserInfo() {
@@ -54,6 +60,15 @@ public class UserController {
     @ApiOperation("获取徽章")
     public ApiResult<Void> wearingBadge(@RequestBody @Valid WearingBadgeReq wearingBadgeReq) {
         userService.wearingBadge(RequestHolder.getUid(), wearingBadgeReq.getItemId());
+        return ApiResult.success();
+    }
+
+    @PostMapping("/black")
+    @ApiOperation("拉黑用户")
+    public ApiResult<Void> blackUser(@RequestBody @Valid BlackUserReq blackUserReq) {
+        boolean isManager = roleService.hasPower(RequestHolder.getUid(), RoleEnum.CHAT_MANAGER);
+        AssertUtil.isTrue(isManager, "没有管理权限");
+        userService.black(blackUserReq.getUid());
         return ApiResult.success();
     }
 

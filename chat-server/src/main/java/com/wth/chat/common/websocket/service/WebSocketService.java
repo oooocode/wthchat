@@ -1,5 +1,7 @@
 package com.wth.chat.common.websocket.service;
 
+import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.websocket.domain.vo.resp.WSBaseResp;
 import io.netty.channel.Channel;
 
 /**
@@ -19,4 +21,6 @@ public interface WebSocketService {
     void waitAuthorize(Integer code);
 
     void authorize(Channel channel, String token);
+
+    void sendMsgToAll(WSBaseResp<?> wsBaseResp);
 }

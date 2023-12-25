@@ -43,6 +43,7 @@ public class IpInfo implements Serializable {
     }
 
     public String needRefreshIp() {
+        // 如果最新ip，和以前的ip详细信息一样就不更新
         boolean notNeedRefresh = Optional.ofNullable(updateIpDetail)
                 .map(IpDetail::getIp)
                 .filter(ip -> Objects.equals(ip, updateIp))
@@ -51,6 +52,7 @@ public class IpInfo implements Serializable {
     }
 
     public void refreshIpDetail(IpDetail ipDetail) {
+        // 解析后的ip和获取的ip一致才更新
         if (Objects.equals(createIp, ipDetail.getIp())) {
             createIpDetail = ipDetail;
         }

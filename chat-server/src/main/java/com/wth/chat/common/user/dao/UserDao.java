@@ -2,6 +2,7 @@ package com.wth.chat.common.user.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.enums.UserStatusEnum;
 import com.wth.chat.common.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,14 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
         return lambdaUpdate()
                 .set(User::getItemId, itemId)
                 .eq(User::getId, uid)
+                .update();
+    }
+
+    public void blackUser(Long uid) {
+        lambdaUpdate()
+                .set(User::getStatus, UserStatusEnum.NORMAL.getStatus())
+                .eq(User::getId, uid)
+                .eq(User::getStatus, UserStatusEnum.NORMAL.getStatus())
                 .update();
     }
 }

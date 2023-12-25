@@ -3,15 +3,19 @@ package com.wth.chat.common.user.service.impl;
 
 import com.wth.chat.common.common.annotation.RedissonLock;
 import com.wth.chat.common.common.config.CacheConfig;
+import com.wth.chat.common.common.event.UserBlackEvent;
 import com.wth.chat.common.common.event.UserRegisterEvent;
 import com.wth.chat.common.common.event.listener.RegisterEventListener;
 import com.wth.chat.common.common.utils.AssertUtil;
+import com.wth.chat.common.user.dao.BlackDao;
 import com.wth.chat.common.user.dao.ItemConfigDao;
 import com.wth.chat.common.user.dao.UserBackpackDao;
 import com.wth.chat.common.user.dao.UserDao;
+import com.wth.chat.common.user.domain.entity.Black;
 import com.wth.chat.common.user.domain.entity.ItemConfig;
 import com.wth.chat.common.user.domain.entity.User;
 import com.wth.chat.common.user.domain.entity.UserBackpack;
+import com.wth.chat.common.user.domain.enums.BlackTypeEnum;
 import com.wth.chat.common.user.domain.enums.ItemEnum;
 import com.wth.chat.common.user.domain.enums.ItemTypeEnum;
 import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
@@ -28,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.wth.chat.common.user.service.impl.WXMsgServiceImpl.WAIT_AUTHORIZE_MAP;
@@ -54,6 +59,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ItemCache itemCache;
+
+    @Autowired
+    private BlackDao blackDao;
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
@@ -121,6 +129,37 @@ public class UserServiceImpl implements UserService {
         ItemConfig itemConfig = itemConfigDao.getById(itemId);
         AssertUtil.equal(itemConfig.getType(), ItemTypeEnum.BADGE.getType(), "必须是徽章才可以穿戴哦");
         userDao.wearingBadge(uid, itemId);
+    }
+
+    @Override
+    public void black(Long uid) {
+        User user = userDao.getById(uid);
+        Black black = new Black();
+        black.setType(BlackTypeEnum.ID.getType());
+        black.setTarget(uid.toString());
+        blackDao.save(black);
+        // 拉黑ip
+        if (Objects.isNull(user.getIpInfo())) {
+            return;
+        }
+        blackUserIp(user.getIpInfo().getCreateIp());
+        blackUserIp(user.getIpInfo().getUpdateIp());
+        // 发送拉黑事件
+        applicationEventPublisher.publishEvent(new UserBlackEvent(this, user));
+    }
+
+    private void blackUserIp(String ip) {
+        if (StringUtils.isBlank(ip)) {
+            return;
+        }
+        Black oldBlack = blackDao.getByTargetAndType(ip, BlackTypeEnum.IP);
+        if (Objects.nonNull(oldBlack)) {
+            return;
+        }
+        Black black = new Black();
+        black.setType(BlackTypeEnum.IP.getType());
+        black.setTarget(ip);
+        blackDao.save(black);
     }
 
     private void fillUserInfo(Long uid, WxOAuth2UserInfo userInfo) {

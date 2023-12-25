@@ -1,5 +1,6 @@
 package com.wth.chat.common.common.config;
 
+import com.wth.chat.common.common.interceptor.BlackInterceptor;
 import com.wth.chat.common.common.interceptor.CollectionInterceptor;
 import com.wth.chat.common.common.interceptor.TokenInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
     private CollectionInterceptor collectionInterceptor;
+    @Autowired
+    private BlackInterceptor blackInterceptor;
 
 
     @Override
@@ -26,6 +29,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/capi/**");
         registry.addInterceptor(collectionInterceptor)
+                .addPathPatterns("/capi/**");
+        registry.addInterceptor(blackInterceptor)
                 .addPathPatterns("/capi/**");
 
     }
