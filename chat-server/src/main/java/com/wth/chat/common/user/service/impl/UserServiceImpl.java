@@ -11,6 +11,8 @@ import com.wth.chat.common.user.dao.BlackDao;
 import com.wth.chat.common.user.dao.ItemConfigDao;
 import com.wth.chat.common.user.dao.UserBackpackDao;
 import com.wth.chat.common.user.dao.UserDao;
+import com.wth.chat.common.user.domain.dto.ItemInfoDTO;
+import com.wth.chat.common.user.domain.dto.SummeryInfoDTO;
 import com.wth.chat.common.user.domain.entity.Black;
 import com.wth.chat.common.user.domain.entity.ItemConfig;
 import com.wth.chat.common.user.domain.entity.User;
@@ -18,11 +20,15 @@ import com.wth.chat.common.user.domain.entity.UserBackpack;
 import com.wth.chat.common.user.domain.enums.BlackTypeEnum;
 import com.wth.chat.common.user.domain.enums.ItemEnum;
 import com.wth.chat.common.user.domain.enums.ItemTypeEnum;
+import com.wth.chat.common.user.domain.vo.req.ItemInfoReq;
+import com.wth.chat.common.user.domain.vo.req.SummeryInfoReq;
 import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import com.wth.chat.common.user.service.UserService;
 import com.wth.chat.common.user.service.adapter.UserAdapter;
 import com.wth.chat.common.user.service.cache.ItemCache;
+import com.wth.chat.common.user.service.cache.UserCache;
+import com.wth.chat.common.user.service.cache.UserSummaryCache;
 import com.wth.chat.common.websocket.service.WebSocketService;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +37,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -65,6 +73,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private UserCache userCache;
+
+    @Autowired
+    private UserSummaryCache userSummaryCache;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -146,6 +160,47 @@ public class UserServiceImpl implements UserService {
         blackUserIp(user.getIpInfo().getUpdateIp());
         // 发送拉黑事件
         applicationEventPublisher.publishEvent(new UserBlackEvent(this, user));
+    }
+
+    @Override
+    public List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req) {
+        //需要前端同步的uid
+        List<Long> uidList = getNeedSyncUidList(req.getReqList());
+        //加载用户信息
+        Map<Long, SummeryInfoDTO> batch = userSummaryCache.getBatch(uidList);
+        return req.getReqList()
+                .stream()
+                .map(a -> batch.containsKey(a.getUid()) ? batch.get(a.getUid()) : SummeryInfoDTO.skip(a.getUid()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ItemInfoDTO> getItemInfo(ItemInfoReq req) {
+        return req.getReqList().stream().map(a -> {
+            ItemConfig itemConfig = itemCache.getById(a.getItemId());
+            if (Objects.nonNull(a.getLastModifyTime()) && a.getLastModifyTime() >= itemConfig.getUpdateTime().getTime()) {
+                return ItemInfoDTO.skip(a.getItemId());
+            }
+            ItemInfoDTO dto = new ItemInfoDTO();
+            dto.setItemId(itemConfig.getId());
+            dto.setImg(itemConfig.getImg());
+            dto.setDescribe(itemConfig.getDescribe());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    private List<Long> getNeedSyncUidList(List<SummeryInfoReq.InfoReq> reqList) {
+        List<Long> needSyncUidList = new ArrayList<>();
+        List<Long> userModifyTime = userCache.getUserModifyTime(reqList.stream().map(SummeryInfoReq.InfoReq::getUid).collect(Collectors.toList()));
+        for (int i = 0; i < reqList.size(); i++) {
+            SummeryInfoReq.InfoReq infoReq = reqList.get(i);
+            Long modifyTime = userModifyTime.get(i);
+            if (Objects.isNull(infoReq.getLastModifyTime()) || (Objects.nonNull(modifyTime) && modifyTime > infoReq.getLastModifyTime())) {
+                needSyncUidList.add(infoReq.getUid());
+            }
+        }
+        return needSyncUidList;
     }
 
     private void blackUserIp(String ip) {

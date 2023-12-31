@@ -1,7 +1,11 @@
 package com.wth.chat.common.user.service;
 
 
+import com.wth.chat.common.user.domain.dto.ItemInfoDTO;
+import com.wth.chat.common.user.domain.dto.SummeryInfoDTO;
 import com.wth.chat.common.user.domain.entity.User;
+import com.wth.chat.common.user.domain.vo.req.ItemInfoReq;
+import com.wth.chat.common.user.domain.vo.req.SummeryInfoReq;
 import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -30,4 +34,10 @@ public interface UserService  {
     void wearingBadge(Long uid, Long itemId);
 
     void black(Long uid);
+
+    List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req);
+
+    List<ItemInfoDTO> getItemInfo(ItemInfoReq req);
+
+
 }

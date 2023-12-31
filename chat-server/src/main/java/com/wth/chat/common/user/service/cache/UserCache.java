@@ -1,6 +1,8 @@
 package com.wth.chat.common.user.service.cache;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.wth.chat.common.common.utils.RedisUtils;
+import com.wth.chat.common.constants.RedisKey;
 import com.wth.chat.common.user.dao.BlackDao;
 import com.wth.chat.common.user.dao.UserRoleDao;
 import com.wth.chat.common.user.domain.entity.Black;
@@ -55,5 +57,10 @@ public class UserCache {
 
     @CacheEvict(cacheNames = "user", key = "'blackMap'")
     public void evictBlack() {
+    }
+
+    public List<Long> getUserModifyTime(List<Long> uidList) {
+        List<String> keys = uidList.stream().map(uid -> RedisKey.getKey(RedisKey.USER_MODIFY_STRING, uid)).collect(Collectors.toList());
+        return RedisUtils.mget(keys, Long.class);
     }
 }

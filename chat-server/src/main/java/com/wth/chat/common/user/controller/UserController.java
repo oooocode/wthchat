@@ -3,10 +3,10 @@ package com.wth.chat.common.user.controller;
 
 import com.wth.chat.common.common.utils.AssertUtil;
 import com.wth.chat.common.common.utils.RequestHolder;
+import com.wth.chat.common.user.domain.dto.ItemInfoDTO;
+import com.wth.chat.common.user.domain.dto.SummeryInfoDTO;
 import com.wth.chat.common.user.domain.enums.RoleEnum;
-import com.wth.chat.common.user.domain.vo.req.BlackUserReq;
-import com.wth.chat.common.user.domain.vo.req.ModifyNameReq;
-import com.wth.chat.common.user.domain.vo.req.WearingBadgeReq;
+import com.wth.chat.common.user.domain.vo.req.*;
 import com.wth.chat.common.user.domain.vo.resp.ApiResult;
 import com.wth.chat.common.user.domain.vo.resp.BadgeResp;
 import com.wth.chat.common.user.domain.vo.resp.UserInfoResp;
@@ -49,6 +49,19 @@ public class UserController {
         userService.modifyName(RequestHolder.getUid(), modifyNameReq.getName());
         return ApiResult.success();
     }
+
+    @PostMapping("/public/summary/userInfo/batch")
+    @ApiOperation("用户聚合信息-返回的代表需要刷新的")
+    public ApiResult<List<SummeryInfoDTO>> getSummeryUserInfo(@Valid @RequestBody SummeryInfoReq req) {
+        return ApiResult.success(userService.getSummeryUserInfo(req));
+    }
+
+    @PostMapping("/public/badges/batch")
+    @ApiOperation("徽章聚合信息-返回的代表需要刷新的")
+    public ApiResult<List<ItemInfoDTO>> getItemInfo(@Valid @RequestBody ItemInfoReq req) {
+        return ApiResult.success(userService.getItemInfo(req));
+    }
+
 
     @GetMapping("/badges")
     @ApiOperation("获取徽章")
