@@ -6,6 +6,8 @@ import com.wth.chat.common.user.domain.enums.UserStatusEnum;
 import com.wth.chat.common.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @Author: wth
  * @Create: 2023/11/1 - 22:59
@@ -42,5 +44,12 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
                 .eq(User::getId, uid)
                 .eq(User::getStatus, UserStatusEnum.NORMAL.getStatus())
                 .update();
+    }
+
+    public List<User> getFriendList(List<Long> uids) {
+        return lambdaQuery()
+                .in(User::getId, uids)
+                .select(User::getId, User::getActiveStatus, User::getName, User::getAvatar)
+                .list();
     }
 }

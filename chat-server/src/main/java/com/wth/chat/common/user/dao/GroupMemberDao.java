@@ -2,7 +2,6 @@ package com.wth.chat.common.user.dao;
 
 import com.wth.chat.common.user.domain.entity.GroupMember;
 import com.wth.chat.common.user.mapper.GroupMemberMapper;
-import com.wth.chat.common.user.service.IGroupMemberService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 

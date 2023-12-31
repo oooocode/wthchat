@@ -2,7 +2,6 @@ package com.wth.chat.common.user.dao;
 
 import com.wth.chat.common.user.domain.entity.Contact;
 import com.wth.chat.common.user.mapper.ContactMapper;
-import com.wth.chat.common.user.service.IContactService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
